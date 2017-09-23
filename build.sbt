@@ -1,12 +1,10 @@
 val ghost4jVersion = "1.0.1"
-val http4sVersion = "0.15.12a"
 val log4sVersion = "1.3.4"
 val pureConfigVersion = "0.7.0"
 val scalazVersion = "7.2.15"
 val scalazStreamVersion = "0.8.6a"
 val scalaTestVersion = "3.0.1"
 val shapelessVersion = "2.3.2"
-val specs2Version = "3.8.9"
 val logbackVersion = "1.1.7"
 val javaxMailVersion = "1.6.0"
 
@@ -17,16 +15,11 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq("org.ghost4j"  % "ghost4j" % ghost4jVersion,
                                 "org.scalaz"   %% "scalaz-core" % scalazVersion,
                                 "org.scalaz"   %% "scalaz-concurrent" % scalazVersion,
-                                "org.http4s"   %% "http4s-argonaut"       % http4sVersion,
-                                "org.http4s"   %% "http4s-blaze-server"   % http4sVersion,
-                                "org.http4s"   %% "http4s-dsl"            % http4sVersion,
-                                "org.http4s"   %% "http4s-server-metrics" % http4sVersion,
                                 "org.log4s"    %% "log4s"                 % log4sVersion,
                                 "ch.qos.logback" % "logback-classic" % logbackVersion,
                                 "com.github.pureconfig" %% "pureconfig"   % pureConfigVersion,
                                 "javax.mail" % "javax.mail-api" % javaxMailVersion,
                                 "com.sun.mail" % "javax.mail" % javaxMailVersion,
-                                "com.sun.mail" % "pop3" % javaxMailVersion,
-                                "org.specs2" %% "specs2-core" % specs2Version)
+                                "com.sun.mail" % "pop3" % javaxMailVersion)
 
   )
