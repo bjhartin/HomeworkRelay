@@ -47,20 +47,20 @@ trait Smtp {
     taskFromUnsafe {
       import ctx.config.rsmMessage._
 
-      val message = new MimeMessage(session)
+      val newMessage = new MimeMessage(session)
 
       ctx.logger.info(s"Creating new message from original: ${original.getSubject}")
 
       val from = original.getFrom.toList.headOption.getOrElse(throw new NoSender(original.getSubject))
 
-      message.setFrom(from)
-      message.setSender(original.getSender)
-      message.setRecipients(Message.RecipientType.TO, toAddress)
-      message.setSubject(subjectPrefix)
-      message.setText(body)
+      newMessage.setFrom(from)
+      newMessage.setSender(original.getSender)
+      newMessage.setRecipients(Message.RecipientType.TO, toAddress)
+      newMessage.setSubject(s"Homework files from $from")
+      newMessage.setText(body)
 
-      ctx.logger.info(s"New message: ${message.getSubject} from $from")
-      message
+      ctx.logger.info(s"New message: ${newMessage.getSubject}")
+      newMessage
     }
   }
 
