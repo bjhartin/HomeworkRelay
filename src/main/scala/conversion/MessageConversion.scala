@@ -5,7 +5,9 @@ import pdftojpg.FileConversion.pdfPagesToImages
 import scalaz.concurrent.Task
 import scalaz.{Kleisli, ListT}
 
-object MessageConversion {
+object MessageConversion extends MessageConversion
+
+trait MessageConversion {
   import Models._
   import Attachments._
   import Smtp._

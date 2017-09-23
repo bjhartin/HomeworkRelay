@@ -12,7 +12,9 @@ import scala.util.control.NoStackTrace
 import scalaz.Kleisli
 import scalaz.concurrent.Task
 
-object FileConversion {
+object FileConversion extends FileConversion
+
+trait FileConversion {
   import Models._
   import TaskUtils._
 
