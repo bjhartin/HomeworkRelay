@@ -6,8 +6,8 @@ import javax.activation.{DataHandler, DataSource, FileDataSource}
 import javax.mail.internet.{MimeBodyPart, MimeMessage, MimeMultipart}
 import javax.mail.{BodyPart, Multipart, Part}
 
-import scalaz.{Kleisli, ListT}
 import scalaz.concurrent.Task
+import scalaz.{Kleisli, ListT}
 
 object Attachments extends Attachments {
   object Models {

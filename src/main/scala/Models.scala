@@ -1,7 +1,6 @@
 package pdftojpg
 
 import java.io.File
-import javax.mail.Message
 import javax.mail.internet.MimeMessage
 
 object Models {

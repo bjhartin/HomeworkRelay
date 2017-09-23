@@ -6,10 +6,9 @@ import javax.mail.internet.MimeMessage
 import pdftojpg.TaskUtils.taskFromUnsafe
 
 import scala.util.control.NoStackTrace
-import scalaz.Kleisli
+import scalaz.Scalaz._
+import scalaz.{Kleisli, _}
 import scalaz.concurrent.Task
-
-import scalaz._, Scalaz._
 
 object Smtp extends Smtp
 

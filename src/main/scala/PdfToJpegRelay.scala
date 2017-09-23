@@ -6,11 +6,11 @@ import scala.util.control.NonFatal
 import scalaz.concurrent.{Task, TaskApp}
 import scalaz.{-\/, \/}
 
-object Poller extends TaskApp {
+object PdfToJpegRelay extends TaskApp {
   import Attachments._
   import EmailConfig._
+  import MessageConversion._
   import Pop3._
-  import Processing._
   import Smtp._
   import TaskUtils._
 

@@ -2,10 +2,10 @@ package pdftojpg
 
 import pdftojpg.FileConversion.pdfPagesToImages
 
-import scalaz.{Kleisli, ListT}
 import scalaz.concurrent.Task
+import scalaz.{Kleisli, ListT}
 
-object Processing {
+object MessageConversion {
   import Models._
   import Attachments._
   import Smtp._
