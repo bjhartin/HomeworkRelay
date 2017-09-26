@@ -10,15 +10,17 @@ object Models {
     }
   }
 
-  case class UniqueFolderName(value: String)
+  case class TempFolder(folder: File)
 
   case class SavedPageImage(file: File)
 
-  case class MessageWithPdf(message: MimeMessage, pdf: SavedPdf, folder: UniqueFolderName)
+  case class MessageWithPdf(mimeMessage: MimeMessage, pdf: SavedPdf, folder: TempFolder)
 
-  case class MessageAndImages(message: MimeMessage, images: List[SavedPageImage])
+  case class MessageAndImages(mimeMessage: MimeMessage, images: List[SavedPageImage], folder: TempFolder)
 
-  case class MessageWithAttachedImages(message: MimeMessage)
+  case class MessageWithAttachedImages(mimeMessage: MimeMessage, tempFolder: TempFolder)
 
-  case class SentMessage(message: MessageWithAttachedImages)
+  case class SentMessage(messageWithAttachedImages: MessageWithAttachedImages)
+
+  case class DeletedFile(file: File)
 }

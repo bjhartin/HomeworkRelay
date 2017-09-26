@@ -29,6 +29,14 @@ trait FileConversion {
     }
   }
 
+  def cleanupFiles(sentMessages: List[SentMessage]): Kleisli[Task, Context, List[DeletedFile]] = Kleisli { ctx =>
+    val tasks = sentMessages.map {m =>
+      ctx.logger.info(s"Deleting folder ${m.messageWithAttachedImages.tempFolder.folder.getAbsolutePath}")
+      delete(m.messageWithAttachedImages.tempFolder.folder)
+    }
+    Task.gatherUnordered(tasks)
+  }
+
   private[this] def loadDoc(pdf: SavedPdf): Kleisli[Task, Context, Document] = Kleisli { ctx =>
     taskFromUnsafe {
       val doc = new PDFDocument()
@@ -73,7 +81,14 @@ trait FileConversion {
       Task.gatherUnordered(imageTasks)
   }
 
+  private[this] def delete(file: File): Task[DeletedFile] = taskFromUnsafe {
+    if (file.isDirectory)
+      Option(file.listFiles).map(_.toList).getOrElse(Nil).foreach(delete)
+    if(file.delete) DeletedFile(file) else throw new CouldNotDelete(file)
+  }
+
   object FailedToCastImage extends NoStackTrace
   object NoFileArg extends NoStackTrace
   case class CouldNotWriteFile(f: File) extends NoStackTrace
+  case class CouldNotDelete(f: File) extends NoStackTrace
 }

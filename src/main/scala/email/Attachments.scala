@@ -47,12 +47,12 @@ trait Attachments {
 
   // TODO: We probably want this to take a domain type and return one, e.g.
   // MessageAndImages and MessageWithImagesAttached
-  def attachImages(message: MimeMessage, images: List[SavedPageImage]): Kleisli[Task, Context, MessageWithAttachedImages] = {
+  def attachImages(message: MimeMessage, images: List[SavedPageImage], folder: TempFolder): Kleisli[Task, Context, MessageWithAttachedImages] = {
     for {
       multipart <- toMultipart(images)
     } yield {
       message.setContent(multipart)
-      MessageWithAttachedImages(message)
+      MessageWithAttachedImages(message, folder)
     }
   }
 
@@ -90,14 +90,13 @@ trait Attachments {
     }
   }
 
-  private[this] def savePdfAttachment(pdf: PdfAttachment, folder: UniqueFolderName): Kleisli[Task, Context, SavedPdf] = Kleisli { ctx =>
+  private[this] def savePdfAttachment(pdf: PdfAttachment, folder: TempFolder): Kleisli[Task, Context, SavedPdf] = Kleisli { ctx =>
     taskFromUnsafe {
       val part = pdf.part
-      val uuid = UUID.randomUUID()
-      val file = new File(folder.value, "homework.pdf")
+      val file = new File(folder.folder.toString, "homework.pdf")
       val createdFolder = file.getParentFile.mkdirs
-      if(!createdFolder){throw CouldNotCreateFolder(folder.value)}
-      ctx.logger.info(s"Saving PDF attachment: ${file.getAbsolutePath}")
+      if(!createdFolder){throw CouldNotCreateFolder(folder.folder)}
+      ctx.logger.info(s"Saving PDF attachment: ${file.getName}")
       part.saveFile(file)
       SavedPdf(file)
     }
@@ -114,7 +113,10 @@ trait Attachments {
         val messageBodyPart: MimeBodyPart = new MimeBodyPart()
 
         messageBodyPart.setDataHandler(new DataHandler(source))
-        messageBodyPart.setFileName(f.getAbsolutePath)
+
+        ctx.logger.info(s"Attaching ${f.getName} to email")
+
+        messageBodyPart.setFileName(f.getName)
 
         multipart.addBodyPart(messageBodyPart)
       }
@@ -123,15 +125,19 @@ trait Attachments {
     }
   }
 
-  private[this] def folderForMessageAttachments(message: MimeMessage): Kleisli[Task, Context, UniqueFolderName] = Kleisli {ctx =>
+  private[this] def folderForMessageAttachments(message: MimeMessage): Kleisli[Task, Context, TempFolder] = Kleisli { ctx =>
     taskFromUnsafe {
       val bos = new ByteArrayOutputStream()
       message.writeTo(bos)
-      val digest = MessageDigest.getInstance("SHA1")
-      val folder = digest.digest(bos.toByteArray)
-      UniqueFolderName(folder.toString)
+      val digest = MessageDigest.getInstance("MD5")
+      val digestBytes = digest.digest(bos.toByteArray)
+      val folder = javax.xml.bind.DatatypeConverter.printHexBinary(digestBytes)
+
+      ctx.logger.info(s"Using folder $folder to process attachments")
+
+      TempFolder(new File(folder))
     }
   }
 
-  case class CouldNotCreateFolder(folderPath: String) extends NoStackTrace
+  case class CouldNotCreateFolder(folder: File) extends NoStackTrace
 }

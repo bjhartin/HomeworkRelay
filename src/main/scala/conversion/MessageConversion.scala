@@ -26,8 +26,8 @@ trait MessageConversion {
   def transformMessage(message: MessageWithPdf): Kleisli[Task, Context, MessageWithAttachedImages] = Kleisli { ctx =>
     for {
       images <- pdfPagesToImages(message.pdf).run(ctx)
-      newMessage <- createRsmMessage(message.message).run(ctx)
-      messageWithAttachedImages <- attachImages(newMessage, images).run(ctx)
+      newMessage <- createRsmMessage(message.mimeMessage).run(ctx)
+      messageWithAttachedImages <- attachImages(newMessage, images, message.folder).run(ctx)
     } yield {
       messageWithAttachedImages
     }

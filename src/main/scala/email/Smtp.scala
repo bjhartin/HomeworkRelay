@@ -3,6 +3,7 @@ package pdftojpg
 import javax.mail._
 import javax.mail.internet.MimeMessage
 
+import pdftojpg.Models.{MessageWithAttachedImages, SentMessage}
 import pdftojpg.TaskUtils.taskFromUnsafe
 
 import scala.util.control.NoStackTrace
@@ -21,13 +22,14 @@ trait Smtp {
       mimeMessage
     }
 
-  def sendMessages(messages: List[MimeMessage]): Kleisli[Task, Context, List[Unit]] =
+  def sendMessages(messages: List[MessageWithAttachedImages]): Kleisli[Task, Context, List[SentMessage]] =
     messages.traverseU(m => sendMessage(m))
 
-  def sendMessage(message: MimeMessage): Kleisli[Task, Context, Unit] = Kleisli { ctx =>
+  def sendMessage(message: MessageWithAttachedImages): Kleisli[Task, Context, SentMessage] = Kleisli { ctx =>
     taskFromUnsafe {
-      ctx.logger.info(s"Sending message: ${message.getSubject}")
-      Transport.send(message)
+      ctx.logger.info(s"Sending message: ${message.mimeMessage.getSubject}")
+      //Transport.send(message.mimeMessage)
+      SentMessage(message)
     }
   }
 

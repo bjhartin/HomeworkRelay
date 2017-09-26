@@ -9,6 +9,7 @@ import scalaz.{-\/, \/}
 object PdfToJpegRelay extends TaskApp {
   import Attachments._
   import EmailConfig._
+  import FileConversion._
   import MessageConversion._
   import Pop3._
   import Smtp._
@@ -27,7 +28,8 @@ object PdfToJpegRelay extends TaskApp {
       allMessages <- getEmails.run(ctx)
       messagesWithPdfs <- findMessagesWithPdfs(allMessages).run(ctx)
       messagesForRSMWithImages <- transformMessages(messagesWithPdfs).run(ctx)
-      sentMessages <- sendMessages(messagesForRSMWithImages.map(_.message)).run(ctx)
+      sentMessages <- sendMessages(messagesForRSMWithImages).run(ctx)
+      cleanedUp <- cleanupFiles(sentMessages).run(ctx)
     } yield {
       ctx.logger.info("Waiting")
       Thread.sleep(ctx.config.pollingPeriodSeconds * 1000)
