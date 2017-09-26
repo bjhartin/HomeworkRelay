@@ -30,7 +30,7 @@ case class EmailConfig(pop3: Pop3Config, smtp: SmtpConfig, rsmMessage: RsmMessag
     props
   }
 }
-case class RsmMessageConfig(toAddress: String, body: String)
+case class RsmMessageConfig(toAddress: String, ccAddress: String, body: String)
 case class Pop3Config(host: String, port: Int)
 case class SmtpConfig(host: String, port: Int)
 

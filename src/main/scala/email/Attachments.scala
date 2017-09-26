@@ -1,11 +1,13 @@
 package pdftojpg
 
-import java.io.File
+import java.io.{ByteArrayOutputStream, File}
+import java.security.MessageDigest
 import java.util.UUID
 import javax.activation.{DataHandler, DataSource, FileDataSource}
 import javax.mail.internet.{MimeBodyPart, MimeMessage, MimeMultipart}
 import javax.mail.{BodyPart, Multipart, Part}
 
+import scala.util.control.NoStackTrace
 import scalaz.concurrent.Task
 import scalaz.{Kleisli, ListT}
 
@@ -54,13 +56,16 @@ trait Attachments {
     }
   }
 
-  def findMessagesWithPdfs(messages: List[MimeMessage]): Kleisli[Task, Context, List[MessageWithPdf]] = Kleisli { ctx =>
+  def findMessagesWithPdfs(messages: List[MimeMessage]): Kleisli[Task, Context, List[MessageWithPdf]] = Kleisli {ctx =>
+    // This composition seems wonky
     val m = for {
       message <- ListT(Task.delay(messages))
       attachment <- ListT(getAttachmentFromMessage(message).map(_.toList).run(ctx))
-      pdf <- ListT(savePdfAttachment(attachment).map(List(_)).run(ctx))
+      folder <- ListT(folderForMessageAttachments(message).map(List(_)).run(ctx))
+      pdf <- ListT(savePdfAttachment(attachment, folder).map(List(_)).run(ctx))
+
     } yield {
-      MessageWithPdf(message, pdf)
+      MessageWithPdf(message, pdf, folder)
     }
     m.run
   }
@@ -85,14 +90,16 @@ trait Attachments {
     }
   }
 
-  private[this] def savePdfAttachment(pdf: PdfAttachment): Kleisli[Task, Context, SavedPdf] = Kleisli { ctx =>
+  private[this] def savePdfAttachment(pdf: PdfAttachment, folder: UniqueFolderName): Kleisli[Task, Context, SavedPdf] = Kleisli { ctx =>
     taskFromUnsafe {
       val part = pdf.part
       val uuid = UUID.randomUUID()
-      val filename = s"$uuid-${part.getFileName}"
-      ctx.logger.info(s"Saving PDF attachment: $filename")
-      part.saveFile(filename)
-      SavedPdf(new File(filename))
+      val file = new File(folder.value, "homework.pdf")
+      val createdFolder = file.getParentFile.mkdirs
+      if(!createdFolder){throw CouldNotCreateFolder(folder.value)}
+      ctx.logger.info(s"Saving PDF attachment: ${file.getAbsolutePath}")
+      part.saveFile(file)
+      SavedPdf(file)
     }
   }
 
@@ -115,4 +122,16 @@ trait Attachments {
       multipart
     }
   }
+
+  private[this] def folderForMessageAttachments(message: MimeMessage): Kleisli[Task, Context, UniqueFolderName] = Kleisli {ctx =>
+    taskFromUnsafe {
+      val bos = new ByteArrayOutputStream()
+      message.writeTo(bos)
+      val digest = MessageDigest.getInstance("SHA1")
+      val folder = digest.digest(bos.toByteArray)
+      UniqueFolderName(folder.toString)
+    }
+  }
+
+  case class CouldNotCreateFolder(folderPath: String) extends NoStackTrace
 }

@@ -9,9 +9,12 @@ object Models {
       file.getName.replaceAll("\\.pdf", "").replaceAll("\\.PDF", "")
     }
   }
+
+  case class UniqueFolderName(value: String)
+
   case class SavedPageImage(file: File)
 
-  case class MessageWithPdf(message: MimeMessage, pdf: SavedPdf)
+  case class MessageWithPdf(message: MimeMessage, pdf: SavedPdf, folder: UniqueFolderName)
 
   case class MessageAndImages(message: MimeMessage, images: List[SavedPageImage])
 

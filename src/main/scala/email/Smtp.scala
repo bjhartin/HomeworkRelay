@@ -56,6 +56,7 @@ trait Smtp {
       newMessage.setFrom(from)
       newMessage.setSender(original.getSender)
       newMessage.setRecipients(Message.RecipientType.TO, toAddress)
+      newMessage.setRecipients(Message.RecipientType.CC, ccAddress)
       newMessage.setSubject(s"Homework files from $from")
       newMessage.setText(body)
 

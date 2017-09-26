@@ -23,7 +23,7 @@ trait FileConversion {
       pdfDocument <- loadDoc(pdf)
       imageRenderer <- makeRenderer()
       renderedImages <- renderImages(imageRenderer, pdfDocument)
-      savedImages <- saveImages(renderedImages, pdf.baseName)
+      savedImages <- saveImages(renderedImages, pdf)
     } yield {
       savedImages
     }
@@ -56,7 +56,7 @@ trait FileConversion {
       val success = ImageIO.write(i, "jpg", f)
 
       if (success) {
-        ctx.logger.info(s"Wrote image ${f}")
+        ctx.logger.info(s"Wrote image ${f.getAbsolutePath}")
         SavedPageImage(f)
       } else {
         throw CouldNotWriteFile(f)
@@ -64,10 +64,13 @@ trait FileConversion {
     }
   }
 
-  private[this] def saveImages(renderedImages: List[RenderedImage], prefix: String): Kleisli[Task, Context, List[SavedPageImage]] = Kleisli { ctx =>
+  private[this] def saveImages(renderedImages: List[RenderedImage], pdf: SavedPdf): Kleisli[Task, Context, List[SavedPageImage]] = Kleisli { ctx =>
     val reversedWithIndex = renderedImages.reverse.zipWithIndex
-    val imageTasks = reversedWithIndex.map { case (ri, i) => saveImage(ri, new File(s"$prefix-$i.jpg")) }.map(_.run(ctx))
-    Task.gatherUnordered(imageTasks)
+    val imageTasks = reversedWithIndex.map { case (ri, i) =>
+      val file = new File(pdf.file.getParent, s"page-${i+1}.jpg")
+      saveImage(ri, file)
+    }.map(_.run(ctx))
+      Task.gatherUnordered(imageTasks)
   }
 
   object FailedToCastImage extends NoStackTrace
